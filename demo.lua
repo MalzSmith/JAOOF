@@ -12,7 +12,8 @@ end
 Jaoof = require("jaoof")
 
 local application = Jaoof.app:new()
-application.title = "test"
+application.title = "TestApplication"
+application.titleBarColor = 0x101010
 application:start()
 
 application:databind("title", LabelTextProvider)

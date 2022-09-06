@@ -201,7 +201,7 @@ local app = control:new()
 app.title = "application"
 app.backgroundColor = 0x202020
 app.foregroundColor = 0xFFFFFF
-app.titleBarColor = 0x1b00ff
+app.titleBarColor = 0x101010
 app.x = 1
 app.y = 1
 app.w = windowWidth
@@ -253,7 +253,7 @@ function app:render()
     container.render(self)
     if self.title ~= "" then
         graphics.drawRectangle(self.x, self.y, self.w, 1, self.titleBarColor)
-        graphics.set(((self.x + self.w) / 2 - 1) - self.title:len() / 2, self.y, self.title, self.titleBarColor)
+        graphics.set(((self.x + self.w) / 2 - 1) - string.len(self.title) / 2, self.y, self.title, self.titleBarColor)
     end
 end
 
