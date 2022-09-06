@@ -191,8 +191,10 @@ end
 function container:render()
     control.render(self)
     -- Render children
-    for idx, ctrl in pairs(self.children) do
-        ctrl:render()
+    if self.children then -- I have no idea why self.children is null here, it will probably come up later...
+        for idx, ctrl in pairs(self.children) do
+            ctrl:render()
+        end
     end
 end
 
@@ -230,10 +232,10 @@ end
 function app:start()
     debugPrint(self.title .. " - starting application... ")
     self:render()
+    local timer = event.timer(1, function()
+        self:tick()
+    end, math.huge)
     while true do
-        local timer =event.timer(1, function ()
-            self:tick()
-        end, math.huge)
         --- Check for events
         local id, _, x, y = event.pullMultiple("touch", "interrupted")
         if id == "interrupted" then
@@ -344,12 +346,12 @@ function progressBar:new(obj)
     return e
 end
 
-Api = {}
-Api.app = app
-Api.control = control
-Api.container = container
-Api.label = label
-Api.button = button
-Api.progressBar = progressBar
+local api = {}
+api.app = app
+api.control = control
+api.container = container
+api.label = label
+api.button = button
+api.progressBar = progressBar
 
-return Api
+return api
