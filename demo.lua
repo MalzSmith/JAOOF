@@ -3,9 +3,10 @@
 
 -- DEBUG = true
 
-TITLE = "ALMA"
-function TitleProvider()
-    return TITLE
+local counter = 0
+
+local function LabelTextProvider()
+    return counter
 end
 
 require("jaoof")
@@ -14,6 +15,6 @@ local application = App:new()
 application.title = "test"
 application:start()
 
-application:databind("title", TitleProvider)
+application:databind("title", LabelTextProvider)
 
 -- Tick the app manually, this won't be necessary once there is an event loop
