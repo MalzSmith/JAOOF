@@ -1,10 +1,10 @@
 -- I've dumped everything in a single file because I'm lazy and I want to make installation of this thing as easy as possible
 
-TextMode = false
+local textMode = false
 
 ---@param text string
 local function debugPrint(text)
-    if TextMode then
+    if textMode then
         print(text)
     end
 end
@@ -15,7 +15,7 @@ local graphics = {}
 
 if not gpu then
     debugPrint("RUNNING WITHOUT GPU ENABLED")
-    TextMode = true
+    textMode = true
 end
 
 --- OpenComputers stuff ------------------------------------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ end
 ---@param value integer
 ---@return nil
 function graphics.setBackground(value)
-    if not TextMode then
+    if not textMode then
         gpu.setBackground(value)
     end
 end
@@ -35,7 +35,7 @@ end
 ---@param value integer
 ---@return nil
 function graphics.setForeground(value)
-    if not TextMode then
+    if not textMode then
         gpu.setForeground(value)
     end
 end
@@ -47,7 +47,7 @@ end
 ---@param width integer
 ---@param color integer
 function graphics.drawRectangle(x, y, width, height, color)
-    if not TextMode then
+    if not textMode then
         local previousColor, _ = gpu.getBackground()
         gpu.setBackground(color)
         gpu.fill(x, y, width, height, " ")
@@ -58,7 +58,7 @@ end
 ---Wrapper for gpu.getResolution
 ---@return number, number
 function graphics.resolution()
-    if not TextMode then
+    if not textMode then
         return gpu.getResolution()
     end
     return 0, 0
@@ -71,7 +71,7 @@ end
 ---@param color integer
 ---@return boolean
 function graphics.set(x, y, value, color)
-    if not TextMode then
+    if not textMode then
         local previousColor, _ = gpu.getBackground()
         gpu.setBackground(color)
         local res = gpu.set(x, y, value)
@@ -190,6 +190,10 @@ end
 ---@return nil
 function container:render()
     control.render(self)
+    -- Render children
+    for idx, ctrl in pairs(self.children) do
+        ctrl:render()
+    end
 end
 
 -- app class ------------------------------------------------------------------------------------------------------------------------------
@@ -227,13 +231,14 @@ function app:start()
     debugPrint(self.title .. " - starting application... ")
     self:render()
     while true do
-        self:tick()
-
-
+        local timer =event.timer(1, function ()
+            self:tick()
+        end, math.huge)
         --- Check for events
-        local id, _, x, y = event.pullMultiple(1, "touch", "interrupted")
+        local id, _, x, y = event.pullMultiple("touch", "interrupted")
         if id == "interrupted" then
             --- interrupted
+            event.cancel(timer)
             graphics.clearScreen()
             break
         elseif id == "touch" then

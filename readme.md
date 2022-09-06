@@ -41,5 +41,3 @@ The library gives access to the following controls:
  - `Button`
  - `ProgressBar`
 
-
-Controls have properties such as `BackgroundColor`, `ForegroundColor`, `Margin`, `Padding`.

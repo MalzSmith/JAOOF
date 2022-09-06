@@ -14,5 +14,3 @@ application.titleBarColor = 0x101010
 application:start()
 
 application:databind("title", LabelTextProvider)
-
--- Tick the app manually, this won't be necessary once there is an event loop
