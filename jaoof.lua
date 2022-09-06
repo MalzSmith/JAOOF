@@ -89,7 +89,7 @@ function graphics.clearScreen()
 end
 
 --- Should probably write a wrapper for this too for compatibility?
-Event = require("event")
+local event = require("event")
 
 
 -- control class ------------------------------------------------------------------------------------------------------------------------------
@@ -231,7 +231,7 @@ function app:start()
 
 
         --- Check for events
-        local id, _, x, y = Event.pullMultiple(1, "touch", "interrupted")
+        local id, _, x, y = event.pullMultiple(1, "touch", "interrupted")
         if id == "interrupted" then
             --- interrupted
             graphics.clearScreen()

@@ -1,17 +1,14 @@
-#!/usr/bin/env lua
 --- Simple demo application
-
--- DEBUG = true
 
 local counter = 0
 
 local function LabelTextProvider()
-    return counter
+    return tostring(counter)
 end
 
-Jaoof = require("jaoof")
+local jaoof = require("jaoof")
 
-local application = Jaoof.app:new()
+local application = jaoof.app:new()
 application.title = "TestApplication"
 application.titleBarColor = 0x101010
 application:start()
