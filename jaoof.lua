@@ -1,5 +1,4 @@
 -- I've dumped everything in a single file because I'm lazy and I want to make installation of this thing as easy as possible
--- Also I'm spamming the main namespace. Sorry about that.
 
 TextMode = false
 
@@ -12,7 +11,7 @@ end
 
 local gpu = require("component").gpu
 
-Graphics = {}
+local graphics = {}
 
 if not gpu then
     debugPrint("RUNNING WITHOUT GPU ENABLED")
@@ -24,7 +23,7 @@ end
 ---Wrapper for gpu.setBackground
 ---@param value integer
 ---@return nil
-function Graphics.setBackground(value)
+function graphics.setBackground(value)
     if not TextMode then
         gpu.setBackground(value)
     end
@@ -35,7 +34,7 @@ end
 ---Wrapper for gpu.setForeground
 ---@param value integer
 ---@return nil
-function Graphics.setForeground(value)
+function graphics.setForeground(value)
     if not TextMode then
         gpu.setForeground(value)
     end
@@ -47,7 +46,7 @@ end
 ---@param height integer
 ---@param width integer
 ---@param color integer
-function Graphics.drawRectangle(x, y, width, height, color)
+function graphics.drawRectangle(x, y, width, height, color)
     if not TextMode then
         local previousColor, _ = gpu.getBackground()
         gpu.setBackground(color)
@@ -58,7 +57,7 @@ end
 
 ---Wrapper for gpu.getResolution
 ---@return number, number
-function Graphics.resolution()
+function graphics.resolution()
     if not TextMode then
         return gpu.getResolution()
     end
@@ -71,7 +70,7 @@ end
 ---@param value string
 ---@param color integer
 ---@return boolean
-function Graphics.set(x, y, value, color)
+function graphics.set(x, y, value, color)
     if not TextMode then
         local previousColor, _ = gpu.getBackground()
         gpu.setBackground(color)
@@ -83,39 +82,45 @@ function Graphics.set(x, y, value, color)
     end
 end
 
+local windowWidth, windowHeight = graphics.resolution()
+
+function graphics.clearScreen()
+    graphics.drawRectangle(1, 1, windowWidth, windowHeight, 0x000000)
+end
+
 --- Should probably write a wrapper for this too for compatibility?
 Event = require("event")
 
 
--- Control class ------------------------------------------------------------------------------------------------------------------------------
+-- control class ------------------------------------------------------------------------------------------------------------------------------
 
 ---INTERNAL USE, USE THE DERIVED CLASSES INSTEAD - Base class for other controls
----@class Control
+---@class control
 ---@field isVisible boolean Whether the control is visible or not
 ---@field orientation boolean orientation of the control (true is vertical, false is horizontal)
 ---@field flowDirection boolean flow direction of the control (true is left->right or top->bottom, false is reversed)
 ---@field foregroundColor integer | nil
 ---@field backgroundColor integer | nil
 ---@field databindings table INTERNAL USE - data bindings of the control
-Control = {}
-Control.isVisible = true
-Control.databindings = {}
-Control.orientation = true
-Control.flowDirection = true
-Control.backgroundColor = nil
-Control.foregroundColor = nil
+local control = {}
+control.isVisible = true
+control.databindings = {}
+control.orientation = true
+control.flowDirection = true
+control.backgroundColor = nil
+control.foregroundColor = nil
 --- Yeah, not sure why you are reading my code but I feel sorry for you.
 --- Anyways, these variables are used internally
-Control.x = 1
-Control.y = 1
-Control.h = 0
-Control.w = 0
+control.x = 1
+control.y = 1
+control.h = 0
+control.w = 0
 
 
----Constructor for the Control class
----@param obj Control | nil
----@return Control
-function Control:new(obj)
+---Constructor for the control class
+---@param obj control | nil
+---@return control
+function control:new(obj)
     obj = obj or {}
     local e = {}
     self.__index = self
@@ -129,13 +134,13 @@ end
 ---Bind a provider to a property of the control (a provider is a function that takes no argument and returns a value)
 ---@param key string
 ---@param provider function()
-function Control:databind(key, provider)
+function control:databind(key, provider)
     self.databindings[key] = provider
 end
 
 ---INTERNAL USE - Forces an update of internal values
 ---@return nil
-function Control:tick()
+function control:tick()
     debugPrint(tostring(self) .. " - updating... ")
     local shouldRender = false
     --- Update databindings
@@ -153,24 +158,24 @@ end
 
 ---INTERNAL USE - Forces a rendering of the control
 ---@return nil
-function Control:render()
+function control:render()
     debugPrint(tostring(self) .. " - rendering... ")
     if self.backgroundColor ~= nil then
-        Graphics.drawRectangle(self.x, self.y, self.w, self.h, self.backgroundColor)
+        graphics.drawRectangle(self.x, self.y, self.w, self.h, self.backgroundColor)
     end
 end
 
--- Container class ------------------------------------------------------------------------------------------------------------------------------
+-- container class ------------------------------------------------------------------------------------------------------------------------------
 
----@class Container : Control
----@field children Control[] Child controls of the container
-Container = Control:new()
-Container.children = {}
+---@class container : control
+---@field children control[] Child controls of the container
+local container = control:new()
+container.children = {}
 
 
----@param obj Container | nil
----@return Container
-function Container:new(obj)
+---@param obj container | nil
+---@return container
+function container:new(obj)
     obj = obj or {}
     local e = {}
     self.__index = self
@@ -183,30 +188,29 @@ end
 
 ---INTERNAL USE - Forces a rendering of the control
 ---@return nil
-function Container:render()
-    Control.render(self)
+function container:render()
+    control.render(self)
 end
 
--- App class ------------------------------------------------------------------------------------------------------------------------------
+-- app class ------------------------------------------------------------------------------------------------------------------------------
 
----@class App : Container
+---@class app : container
 ---@field title string Title of the application. Set to "" if you do not want a title bar
 ---@field titleBarColor integer
-App = Control:new()
-App.title = "Application"
-App.backgroundColor = 0x202020
-App.foregroundColor = 0xFFFFFF
-App.titleBarColor = 0x1b00ff
-App.x = 1
-App.y = 1
-local w, h = Graphics.resolution()
-App.w = w
-App.h = h
+local app = control:new()
+app.title = "application"
+app.backgroundColor = 0x202020
+app.foregroundColor = 0xFFFFFF
+app.titleBarColor = 0x1b00ff
+app.x = 1
+app.y = 1
+app.w = windowWidth
+app.h = windowHeight
 
----Constructor for the App class
----@param obj App | nil
----@return App
-function App:new(obj)
+---Constructor for the app class
+---@param obj app | nil
+---@return app
+function app:new(obj)
     obj = obj or {}
     local e = {}
     self.__index = self
@@ -219,7 +223,7 @@ end
 
 --- Start the application
 ---@return nil
-function App:start()
+function app:start()
     debugPrint(self.title .. " - starting application... ")
     self:render()
     while true do
@@ -230,6 +234,7 @@ function App:start()
         local id, _, x, y = Event.pullMultiple(1, "touch", "interrupted")
         if id == "interrupted" then
             --- interrupted
+            graphics.clearScreen()
             break
         elseif id == "touch" then
             --- TODO event handling
@@ -238,21 +243,21 @@ function App:start()
     end
 end
 
-function App:stop()
+function app:stop()
     -- TODO
 end
 
 ---INTERNAL USE - Forces a rendering of the control
 ---@return nil
-function App:render()
-    Container.render(self)
+function app:render()
+    container.render(self)
     if self.title ~= "" then
-        Graphics.drawRectangle(self.x, self.y, self.w, 1, self.titleBarColor)
-        Graphics.set(((self.x + self.w) / 2 - 1) - self.title:len() / 2, self.y, self.title, self.titleBarColor)
+        graphics.drawRectangle(self.x, self.y, self.w, 1, self.titleBarColor)
+        graphics.set(((self.x + self.w) / 2 - 1) - self.title:len() / 2, self.y, self.title, self.titleBarColor)
     end
 end
 
--- Label class ------------------------------------------------------------------------------------------------------------------------------
+-- label class ------------------------------------------------------------------------------------------------------------------------------
 
 
 ---@alias verticalAlignment
@@ -265,18 +270,18 @@ end
 ---| '"center"'
 ---| '"right"'
 
----@class Label : Control
+---@class label : control
 ---@field text string The text displayed
 ---@field verticalAlignment verticalAlignment
-Label = Control:new()
-Label.text = ""
-Label.verticalAlignment = "center"
-Label.horizontalAlignment = "center"
+local label = control:new()
+label.text = ""
+label.verticalAlignment = "center"
+label.horizontalAlignment = "center"
 
----Constructor for the Label class
----@param obj Label | nil
----@return Label
-function Label:new(obj)
+---Constructor for the label class
+---@param obj label | nil
+---@return label
+function label:new(obj)
     obj = obj or {}
     local e = {}
     self.__index = self
@@ -287,18 +292,18 @@ function Label:new(obj)
     return e
 end
 
--- Button class ------------------------------------------------------------------------------------------------------------------------------
+-- button class ------------------------------------------------------------------------------------------------------------------------------
 
 -- This is pretty much a label just different rendering behavior
 
----@class Button : Label
-Button = Label:new()
+---@class button : label
+local button = label:new()
 
 
----Constructor for the Label class
----@param obj Button | nil
----@return Button
-function Button:new(obj)
+---Constructor for the label class
+---@param obj button | nil
+---@return button
+function button:new(obj)
     obj = obj or {}
     local e = {}
     self.__index = self
@@ -309,21 +314,21 @@ function Button:new(obj)
     return e
 end
 
--- ProgressBar class ------------------------------------------------------------------------------------------------------------------------------
+-- progressBar class ------------------------------------------------------------------------------------------------------------------------------
 
----@class ProgressBar : Control
+---@class progressBar : control
 ---@field value integer Value to be displayed
 ---@field minValue integer Minimum of value
 ---@field maxValue integer Maximum of value
-ProgressBar = Control:new()
-ProgressBar.value = 0
-ProgressBar.minValue = 0
-ProgressBar.maxValue = 100
+local progressBar = control:new()
+progressBar.value = 0
+progressBar.minValue = 0
+progressBar.maxValue = 100
 
----Constructor for the Label class
----@param obj ProgressBar | nil
----@return ProgressBar
-function ProgressBar:new(obj)
+---Constructor for the label class
+---@param obj progressBar | nil
+---@return progressBar
+function progressBar:new(obj)
     obj = obj or {}
     local e = {}
     self.__index = self
@@ -333,3 +338,13 @@ function ProgressBar:new(obj)
     end
     return e
 end
+
+Api = {}
+Api.app = app
+Api.control = control
+Api.container = container
+Api.label = label
+Api.button = button
+Api.progressBar = progressBar
+
+return Api

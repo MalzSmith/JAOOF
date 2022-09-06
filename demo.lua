@@ -9,9 +9,9 @@ local function LabelTextProvider()
     return counter
 end
 
-require("jaoof")
+Jaoof = require("jaoof")
 
-local application = App:new()
+local application = Jaoof.app:new()
 application.title = "test"
 application:start()
 
