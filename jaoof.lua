@@ -92,6 +92,19 @@ end
 local event = require("event")
 
 
+--- Used for creating objects in the constructor
+local function makeObj(self, obj)
+    obj = obj or {}
+    local e = {}
+    self.__index = self
+    setmetatable(e, self)
+    for k, v in pairs(self) do
+        e[k] = obj[k] or v
+    end
+    return e
+end
+
+
 -- control class ------------------------------------------------------------------------------------------------------------------------------
 
 ---INTERNAL USE, USE THE DERIVED CLASSES INSTEAD - Base class for other controls
@@ -121,14 +134,7 @@ control.w = 0
 ---@param obj control | nil
 ---@return control
 function control:new(obj)
-    obj = obj or {}
-    local e = {}
-    self.__index = self
-    setmetatable(e, self)
-    for k, v in pairs(self) do
-        e[k] = obj[k] or v
-    end
-    return e
+    return makeObj(self, obj)
 end
 
 ---Bind a provider to a property of the control (a provider is a function that takes no argument and returns a value)
@@ -176,14 +182,7 @@ container.children = {}
 ---@param obj container | nil
 ---@return container
 function container:new(obj)
-    obj = obj or {}
-    local e = {}
-    self.__index = self
-    setmetatable(e, self)
-    for k, v in pairs(self) do
-        e[k] = obj[k] or v
-    end
-    return e
+    return makeObj(self, obj)
 end
 
 ---INTERNAL USE - Forces a rendering of the control
@@ -217,14 +216,7 @@ app.h = windowHeight
 ---@param obj app | nil
 ---@return app
 function app:new(obj)
-    obj = obj or {}
-    local e = {}
-    self.__index = self
-    setmetatable(e, self)
-    for k, v in pairs(self) do
-        e[k] = obj[k] or v
-    end
-    return e
+    return makeObj(self, obj)
 end
 
 --- Start the application
@@ -289,14 +281,7 @@ label.horizontalAlignment = "center"
 ---@param obj label | nil
 ---@return label
 function label:new(obj)
-    obj = obj or {}
-    local e = {}
-    self.__index = self
-    setmetatable(e, self)
-    for k, v in pairs(self) do
-        e[k] = obj[k] or v
-    end
-    return e
+    return makeObj(self, obj)
 end
 
 -- button class ------------------------------------------------------------------------------------------------------------------------------
@@ -311,14 +296,7 @@ local button = label:new()
 ---@param obj button | nil
 ---@return button
 function button:new(obj)
-    obj = obj or {}
-    local e = {}
-    self.__index = self
-    setmetatable(e, self)
-    for k, v in pairs(self) do
-        e[k] = obj[k] or v
-    end
-    return e
+    return makeObj(self, obj)
 end
 
 -- progressBar class ------------------------------------------------------------------------------------------------------------------------------
@@ -336,14 +314,7 @@ progressBar.maxValue = 100
 ---@param obj progressBar | nil
 ---@return progressBar
 function progressBar:new(obj)
-    obj = obj or {}
-    local e = {}
-    self.__index = self
-    setmetatable(e, self)
-    for k, v in pairs(self) do
-        e[k] = obj[k] or v
-    end
-    return e
+    return makeObj(self, obj)
 end
 
 local api = {}
